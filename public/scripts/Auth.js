@@ -4,6 +4,19 @@ import Router from "./Router.js";
 const Auth = {
     isLoggedIn: false,
     account: null,
+    postLogin:(response,user)=>{
+        if(response.ok){
+Auth.isLoggedIn=true;
+Auth.account = user;
+Auth.updateStatus();
+Router.go("/account")
+        }else{
+            alert(response.message)
+        }
+    },
+
+postRegister:(response,user)=>{},
+
     register:async(event)=>{
         event.preventDefault()
         const user ={
@@ -12,7 +25,7 @@ const Auth = {
         password:document.getElementById("register_password").value,
         }
         const response = await API.register(user)
-        console.log(response)
+        Auth.postRegister(response,{name:user.name,email:user.email})
     }
     
     ,
@@ -23,8 +36,8 @@ const Auth = {
         password:document.getElementById("login_password").value,
         }
         const response = await API.login(credentials)
+       Auth.postLogin(response,{...credentials,name:response.name})
        
-        console.log(response)
     },
     updateStatus() {
         if (Auth.isLoggedIn && Auth.account) {
