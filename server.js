@@ -28,8 +28,56 @@ app.use(express.urlencoded({
   extended: true
 }));
 
-// ADD HERE THE REST OF THE ENDPOINTS
+//protection from rewriting in db
+function findUser(email){
+  const results= db?.data?.users?.filter(u=>u.email === email);
+  if(results.length === 0) return null;
+  return results[0];
+}
 
+// ADD HERE THE REST OF THE ENDPOINTS
+app.post("/auth/login",(req,res)=>{
+
+const user= findUser(req.body.email)
+if (user){
+if (bcrypt.compareSync(req.body.password,user.password)){
+  res.send({ok:true, name:user.name,email:user.email})
+}else{
+  res.send({ok:false,message:"Credentials not found"})
+}
+}else {
+  res.send({ok:false, message:"Credentials not found"})
+}
+
+})
+
+
+
+
+app.post("/auth/register",(req,res)=>{
+
+const salt = bcrypt.genSaltSync(10)
+const hashedPass = bcrypt.hashSync(req.body.password,salt)
+
+  const user ={
+    name:req.body.name,
+    email:req.body.email,
+password: hashedPass
+  }
+  const userFound = findUser(req.body.email)
+  if (userFound){
+    // already exists
+    res.send({ok:false, message:"user already exists"})
+
+  }else{
+    //new user
+    db.data.users.push(user);
+    db.write()
+    res.send({ok:true})
+  }
+ 
+ 
+})
 
 
 app.get("*", (req, res) => {
