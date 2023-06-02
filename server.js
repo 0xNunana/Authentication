@@ -19,7 +19,7 @@ db.data ||= { users: [] }
 
 const rpID = "localhost";
 const protocol = "http";
-const port = 5050;
+const port = 8080;
 const expectedOrigin = `${protocol}://${rpID}:${port}`;
 
 app.use(express.static('public'));

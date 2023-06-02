@@ -6,13 +6,31 @@ const Auth = {
     account: null,
     postLogin:(response,user)=>{
         if(response.ok){
-Auth.isLoggedIn=true;
-Auth.account = user;
-Auth.updateStatus();
-Router.go("/account")
+            Auth.isLoggedIn=true;
+            Auth.account = user;
+            Auth.updateStatus();
+            Router.go("/account")
         }else{
             alert(response.message)
         }
+        if (window.PasswordCredential && user.password) {
+            const credential = new PasswordCredential({
+                name: user.name,
+                id: user.email,
+                password: user.password
+            });
+            navigator.credentials.store(credential);
+        }
+    },
+    autoLogin:async()=>{
+        if (window.PasswordCredential){
+            const credential = await navigator.credentials.get({password:true})
+            document.getElementById("login_email").value = credentials.id;
+                document.getElementById("login_password").value = credentials.
+                Auth.login()
+            console.log(credential)
+        }
+       
     },
 
 postRegister:(response,user)=>{},
@@ -30,7 +48,7 @@ postRegister:(response,user)=>{},
     
     ,
     login:async(event)=>{
-        event.preventDefault()
+        if (event) event.preventDefault();
         const credentials ={
         email:document.getElementById("login_email").value,
         password:document.getElementById("login_password").value,
@@ -39,6 +57,16 @@ postRegister:(response,user)=>{},
        Auth.postLogin(response,{...credentials,name:response.name})
        
     },
+logout : ()=>{
+    Auth.isLoggedIn=false,
+    Auth.account=null,
+    Auth.updateStatus();
+    Router.go("/")
+    if (window.PasswordCredential){
+        navigator.credentials.preventSilentAccess()
+    }
+},
+
     updateStatus() {
         if (Auth.isLoggedIn && Auth.account) {
             document.querySelectorAll(".logged_out").forEach(
@@ -69,6 +97,7 @@ postRegister:(response,user)=>{},
     },
 }
 Auth.updateStatus();
+Auth.autoLogin()
 
 export default Auth;
 
